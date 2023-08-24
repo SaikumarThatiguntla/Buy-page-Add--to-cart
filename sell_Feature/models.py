@@ -23,13 +23,16 @@ class SellProduct(Base):
     s_category= Column(String)
     s_description = Column(String)
     s_price = Column(Float)
+    s_images = Column(String)
+    s_duration = Column(Integer)
+    s_location = Column(String)
     s_owner_id = Column(Integer, ForeignKey("users.id"))
     
     s_owner = relationship("User", back_populates="s_products")
     s_carts = relationship("SellCart", back_populates="s_product")
     product_ratings = relationship("ProductRating", back_populates="pr_product")
-    category_id = Column(Integer, ForeignKey("productcategories.id"))
-    category = relationship("ProductCategory", back_populates="products")
+    #category_id = Column(Integer, ForeignKey("productcategories.id"))
+    #category = relationship("ProductCategory", back_populates="products")
 
 class SellCart(Base):
     __tablename__ = "sellcarts"
@@ -67,7 +70,7 @@ class ProductRating(Base):
     pr_user = relationship("User", back_populates="rated_products")
     pr_product = relationship("SellProduct", back_populates="product_ratings")
 
-
+"""
 class ProductCategory(Base):
     __tablename__ = "productcategories"
 
@@ -75,7 +78,7 @@ class ProductCategory(Base):
     name = Column(String, unique=True, index=True)
 
     products = relationship("SellProduct", back_populates="category")
-"""
+
 class ProductPrice(Base):
     __tablename__ = "productprices"
 

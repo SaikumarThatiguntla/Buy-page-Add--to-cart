@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .auth import get_current_user
-from models import SellCart, SellProduct,ProductRating,ProductCategory
+from models import SellCart, SellProduct,ProductRating
 from database import SessionLocal
 from fastapi import Query
 
@@ -136,6 +136,7 @@ def filter_products_by_price(min_price: float = Query(..., title="Minimum Price"
     } for product in products]
 
     return filtered_products
+"""
 @cart_router.get("/filter_by_category")
 def filter_products_by_category(category: str = Query(..., title="Category"),
                                 db: Session = Depends(get_db)):
@@ -148,3 +149,4 @@ def filter_products_by_category(category: str = Query(..., title="Category"),
     } for product in products]
 
     return filtered_products
+"""

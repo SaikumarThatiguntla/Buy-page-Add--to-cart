@@ -4,6 +4,7 @@ from .validations import CreateUser
 from typing import Optional
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
+import os
 import models
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
@@ -70,18 +71,29 @@ def get_current_user(token: str = Depends(oauth2_bearer)):
             raise get_user_exception()
         return {'username': username, 'user_id': user_id}
     except:
+        print("error here")
         raise get_user_exception()
 
-
+UPLOAD_FOLDER="images/sell"
 @router.post("/create/user")
 def create_new_user(create_user: CreateUser, db: Session = Depends(get_db)):
     create_user_model = models.User()
     create_user_model.email = create_user.email
     create_user_model.username = create_user.username
+    create_user_model.first_name = create_user.first_name
+    create_user_model.last_name = create_user.last_name
     create_user_model.hashed_password = get_password_hash(create_user.password)
     create_user_model.is_active = True
     db.add(create_user_model)
     db.commit()
+    # Generate the folder path and create the folder
+    folder_path = os.path.join(UPLOAD_FOLDER, str(create_user_model.id))
+    os.makedirs(folder_path, exist_ok=True)
+    if create_user_model:
+        return {"message": "User created successfully", "status_code": status.HTTP_201_CREATED}
+    else:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create user")
+
 @router.post("/token")
 def login_for_access_token(form_data : OAuth2PasswordRequestForm = Depends(),
                             db: Session = Depends(get_db)):
@@ -90,7 +102,10 @@ def login_for_access_token(form_data : OAuth2PasswordRequestForm = Depends(),
         raise token_exception()
     token_expires = timedelta(40)
     token = create_access_token(user.username, user.id, expires_delta=token_expires)
-    return {"access_token": token, "token_type":"Bearer"}
+    if token:
+        return {"access_token": token, "token_type":"Bearer"}
+    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="token not genrated")
+
 
 #Exceptions
 def get_user_exception():
