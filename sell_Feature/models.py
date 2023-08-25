@@ -18,14 +18,14 @@ class User(Base):
 class SellProduct(Base):
     __tablename__ = "sellproducts"
 
-    s_id = Column(Integer, primary_key=True, index=True)
-    s_name = Column(String)
-    s_category= Column(String)
-    s_description = Column(String)
-    s_price = Column(Float)
-    s_images = Column(String)
-    s_duration = Column(Integer)
-    s_location = Column(String)
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String)
+    category= Column(String)
+    description = Column(String)
+    price = Column(Float)
+    images = Column(String)
+    duration = Column(Integer)
+    location = Column(String)
     s_owner_id = Column(Integer, ForeignKey("users.id"))
     
     s_owner = relationship("User", back_populates="s_products")
@@ -37,34 +37,35 @@ class SellProduct(Base):
 class SellCart(Base):
     __tablename__ = "sellcarts"
 
-    s_id = Column(Integer, primary_key=True, index=True)
-    s_user_id = Column(Integer, ForeignKey("users.id"))
-    s_product_id = Column(Integer, ForeignKey("sellproducts.s_id"))
-    s_quantity = Column(Integer)
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    product_id = Column(Integer, ForeignKey("sellproducts.id"))
+    quantity = Column(Integer)
     
     s_user = relationship("User", back_populates="s_carts")
     s_product = relationship("SellProduct", back_populates="s_carts")
-    s_payment = relationship("SellPayment", uselist=False, back_populates="s_cart")
+    #s_payment = relationship("SellPayment", uselist=False, back_populates="s_carts")
     #uselist = False indicates a one-to-one or many-to-one relationship,
     #  where the relationship returns a single object.
     #  For example, each cart has a single associated payment.
-
+"""
 class SellPayment(Base):
     __tablename__ = "sellpayments"
 
-    s_id = Column(Integer, primary_key=True, index=True)
-    s_cart_id = Column(Integer, ForeignKey("sellcarts.s_id"))
+    id = Column(Integer, primary_key=True, index=True)
+    s_cart_id = Column(Integer, ForeignKey("sellcarts.id"))
     s_payment_method = Column(String)
     s_payment_status = Column(String)
     
     s_cart = relationship("SellCart", back_populates="s_payment")
+"""
 
 class ProductRating(Base):
     __tablename__ = "productratings"
 
     pr_id = Column(Integer, primary_key=True, index=True)
     pr_user_id = Column(Integer, ForeignKey("users.id"))
-    pr_product_id = Column(Integer, ForeignKey("sellproducts.s_id"))
+    pr_product_id = Column(Integer, ForeignKey("sellproducts.id"))
     pr_rating = Column(Integer)
 
     pr_user = relationship("User", back_populates="rated_products")

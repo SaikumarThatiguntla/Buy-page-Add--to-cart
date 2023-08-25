@@ -24,14 +24,14 @@ def get_db():
 def add_product_to_cart(product_id: int, quantity: int = 1,
                         user: dict = Depends(get_current_user),
                         db: Session = Depends(get_db)):
-    product = db.query(SellProduct).filter(SellProduct.s_id == product_id).first()
+    product = db.query(SellProduct).filter(SellProduct.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
     cart_item = SellCart(
-        s_user_id=user.get("user_id"),
-        s_product_id=product_id,
-        s_quantity=quantity
+        user_id=user.get("user_id"),
+        product_id=product_id,
+        quantity=quantity
     )
     db.add(cart_item)
     db.commit()
@@ -41,17 +41,17 @@ def add_product_to_cart(product_id: int, quantity: int = 1,
 @cart_router.get("/get_products")
 def get_products_in_cart(user: dict = Depends(get_current_user),
                          db: Session = Depends(get_db)):
-    cart_items = db.query(SellCart).filter(SellCart.s_user_id == user.get("user_id")).all()
+    cart_items = db.query(SellCart).filter(SellCart.user_id == user.get("user_id")).all()
     products = []
 
     for cart_item in cart_items:
-        product = db.query(SellProduct).filter(SellProduct.s_id == cart_item.s_product_id).first()
+        product = db.query(SellProduct).filter(SellProduct.id == cart_item.product_id).first()
         if product:
             products.append({
-                "product_id": product.s_id,
-                "product_name": product.s_name,
-                "product_price": product.s_price,
-                "quantity": cart_item.s_quantity
+                "product_id": product.id,
+                "product_name": product.title,
+                "product_price": product.price,
+                "quantity": cart_item.quantity
             })
 
     return products
@@ -62,8 +62,8 @@ def delete_product_from_cart(product_id: int,
                              user: dict = Depends(get_current_user),
                              db: Session = Depends(get_db)):
     cart_item = db.query(SellCart).filter(
-        SellCart.s_user_id == user.get("user_id"),
-        SellCart.s_product_id == product_id
+        SellCart.user_id == user.get("user_id"),
+        SellCart.product_id == product_id
     ).first()
 
     if not cart_item:
@@ -79,7 +79,7 @@ def delete_product_from_cart(product_id: int,
 def rate_product(product_id: int, rating: int,
                  user: dict = Depends(get_current_user),
                  db: Session = Depends(get_db)):
-    product = db.query(SellProduct).filter(SellProduct.s_id == product_id).first()
+    product = db.query(SellProduct).filter(SellProduct.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
@@ -107,7 +107,7 @@ def rate_product(product_id: int, rating: int,
 @cart_router.get("/get_product_ratings/{product_id}")
 def get_product_ratings(product_id: int,
                         db: Session = Depends(get_db)):
-    product = db.query(SellProduct).filter(SellProduct.s_id == product_id).first()
+    product = db.query(SellProduct).filter(SellProduct.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
@@ -116,8 +116,8 @@ def get_product_ratings(product_id: int,
     average_rating = sum(rating.pr_rating for rating in ratings) / total_ratings if total_ratings > 0 else 0
 
     return {
-        "product_id": product.s_id,
-        "product_name": product.s_name,
+        "product_id": product.id,
+        "product_name": product.title,
         "total_ratings": total_ratings,
         "average_rating": average_rating
     }
@@ -127,12 +127,12 @@ def get_product_ratings(product_id: int,
 def filter_products_by_price(min_price: float = Query(..., title="Minimum Price"),
                              max_price: float = Query(..., title="Maximum Price"),
                              db: Session = Depends(get_db)):
-    products = db.query(SellProduct).filter(SellProduct.s_price >= min_price, SellProduct.s_price <= max_price).all()
+    products = db.query(SellProduct).filter(SellProduct.price >= min_price, SellProduct.price <= max_price).all()
 
     filtered_products = [{
-        "product_id": product.s_id,
-        "product_name": product.s_name,
-        "product_price": product.s_price
+        "product_id": product.id,
+        "product_name": product.title,
+        "product_price": product.price
     } for product in products]
 
     return filtered_products
@@ -143,9 +143,9 @@ def filter_products_by_category(category: str = Query(..., title="Category"),
     products = db.query(SellProduct).join(ProductCategory).filter(ProductCategory.name == category).all()
 
     filtered_products = [{
-        "product_id": product.s_id,
-        "product_name": product.s_name,
-        "product_price": product.s_price
+        "product_id": product.id,
+        "product_name": product.title,
+        "product_price": product.price
     } for product in products]
 
     return filtered_products

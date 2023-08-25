@@ -1,5 +1,6 @@
 from fastapi import APIRouter,Depends,status, Request,HTTPException,status,File,UploadFile
 from sqlalchemy.orm import session
+from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from database import SessionLocal, engine
 from models import  User,SellProduct
@@ -61,14 +62,22 @@ async def post_product( product_to_post : Sell_product_form=Depends() ,
         UPLOAD_FOLDER="images/sell/"+str(user['user_id'])
         #exchange_product = json.loads(exchange_product)
         sell_product_model = models.SellProduct()
-        sell_product_model.s_name = product_to_post.title
-        sell_product_model.s_category = product_to_post.category
-        sell_product_model.s_duration = product_to_post.duration
-        sell_product_model.s_location = product_to_post.location
-        sell_product_model.s_price = product_to_post.price
-        sell_product_model.s_images = product_to_post.images
-        sell_product_model.s_description = product_to_post.description
+        sell_product_model.title = product_to_post.title
+        sell_product_model.category = product_to_post.category
+        sell_product_model.duration = product_to_post.duration
+        sell_product_model.location = product_to_post.location
+        sell_product_model.price = product_to_post.price
+        sell_product_model.images = product_to_post.images
+        sell_product_model.description = product_to_post.description
         sell_product_model.s_owner_id = user.get("user_id")
+        """
+        category_name = product_to_post.category
+        category = db.query(ProductCategory).filter(ProductCategory.name == category_name).first()
+        if not category:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid category name")
+
+        sell_product_model.category = category.id
+        """
         db.add(sell_product_model)
         print(sell_product_model)
         db.commit()
@@ -93,7 +102,25 @@ async def post_product( product_to_post : Sell_product_form=Depends() ,
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
+@router.delete("/delete_product/{product_id}")
+async def delete_product(product_id: int, user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+    try:
+        product = db.query(SellProduct).filter(
+            SellProduct.id == product_id, SellProduct.s_owner_id == user.get("user_id")).first()
 
+        if product is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+
+        # Delete the images associated with the product (you might want to add this logic)
+        # ...
+
+        db.delete(product)
+        db.commit()
+
+        return {"message": "Product deleted successfully", "status_code": status.HTTP_200_OK}
+
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 
