@@ -1,7 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,Field
 from fastapi import Form
 from typing import Optional,Union
-
 
 
 class CreateUser(BaseModel):
@@ -19,10 +18,12 @@ class Sell_product(BaseModel):
     images:str
     duration: int
     price: int
+
     location: str
 
-    product_owner_id: int
 
+    product_owner_id: int
+"""
 class Sell_product_form(BaseModel):
 
     title : str
@@ -31,6 +32,7 @@ class Sell_product_form(BaseModel):
     images:Optional[str]
     duration: int
     price:int
+
     location: str
     # product_owner_id: int
 
@@ -42,8 +44,10 @@ class Sell_product_form(BaseModel):
                 images: Optional[str] = Form(...),
                 duration: int = Form(...),
                 price: int = Form(...),
+                time: float = Form(...),
                 location: str = Form(...),
                 )-> 'Sell_product_form':
         return cls(title= title, description = description, category = category, images = images,
                    duration = duration,price=price, location= location)
 
+"""

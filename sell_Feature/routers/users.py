@@ -1,4 +1,4 @@
-from fastapi import APIRouter,Depends,status, Request,HTTPException,status,File,UploadFile
+from fastapi import APIRouter,Depends,status, Request,HTTPException,Form,status,File,UploadFile
 from sqlalchemy.orm import session
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -8,7 +8,10 @@ import models
 from .auth  import get_current_user
 from typing import List
 import os
-from .validations import Sell_product_form,Sell_product
+from datetime import datetime
+import pytz
+
+
 models.Base.metadata.create_all(bind=engine)
 """
 class Sell_Product_validation(BaseModel):
@@ -54,21 +57,30 @@ def get_products_post_by_specific_user( user: dict = Depends(get_current_user),d
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 @router.post("/post_product")
-async def post_product( product_to_post : Sell_product_form=Depends() ,
+async def post_product(title : str =Form(...),
+    description: str =Form(...),
+    category: str =Form(...),
+    duration: int =Form(...),
+    price: int =Form(...),
+    location: str =Form(...),
                        user: dict = Depends(get_current_user),
-                       db: session = Depends(get_db),image_files:List[UploadFile]=File(...)):
+                       db: session = Depends(get_db),
+                       image_files : List[UploadFile] = File(...)):
     try:
 
         UPLOAD_FOLDER="images/sell/"+str(user['user_id'])
         #exchange_product = json.loads(exchange_product)
         sell_product_model = models.SellProduct()
-        sell_product_model.title = product_to_post.title
-        sell_product_model.category = product_to_post.category
-        sell_product_model.duration = product_to_post.duration
-        sell_product_model.location = product_to_post.location
-        sell_product_model.price = product_to_post.price
-        sell_product_model.images = product_to_post.images
-        sell_product_model.description = product_to_post.description
+        sell_product_model.title = title
+        sell_product_model.category = category
+        sell_product_model.duration = duration
+        sell_product_model.location = location
+        sell_product_model.price = price
+        #sell_product_model.images = product_to_post.images
+        sell_product_model.description = description
+        asia_kolkata = pytz.timezone("Asia/Kolkata")
+        current_time = datetime.now(asia_kolkata)
+        sell_product_model.time = current_time
         sell_product_model.s_owner_id = user.get("user_id")
         """
         category_name = product_to_post.category
@@ -123,8 +135,45 @@ async def delete_product(product_id: int, user: dict = Depends(get_current_user)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
+@router.get("/products/all/old_to_new")
+def get_all_products_old_to_new(db: Session = Depends(get_db)):
+    try:
+        query = (
+            db.query(SellProduct)
+            .order_by(SellProduct.time.asc())  # Order by add time in ascending order
+            .all()
+        )
+        if not query:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="No products found"
+            )
 
-#     db.commit()
+        return {"message": "successful", "data": query, "status": status.HTTP_200_OK}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
+
+@router.get("/products/all/new_to_old")
+def get_all_products_new_to_old(db: Session = Depends(get_db)):
+    try:
+        query = (
+            db.query(SellProduct)
+            .order_by(SellProduct.time.desc())  # Order by add time in descending order
+            .all()
+        )
+        if not query:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="No products found"
+            )
+
+        return {"message": "successful", "data": query, "status": status.HTTP_200_OK}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
+
+#db.commit()
 
 
 

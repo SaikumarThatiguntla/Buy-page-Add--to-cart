@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String,ForeignKey,Float
+from sqlalchemy import Column,DateTime, Integer, String,ForeignKey,Float
 from sqlalchemy.orm import relationship
 from database import Base
-
+from datetime import datetime
+import pytz
 class User(Base):
     __tablename__ = "users"
 
@@ -13,7 +14,7 @@ class User(Base):
     s_products = relationship("SellProduct", back_populates="s_owner")
     s_carts = relationship("SellCart", back_populates="s_user")
     rated_products = relationship("ProductRating", back_populates="pr_user")
-
+    wishlist_items = relationship("WishlistItem", back_populates="user")
 
 class SellProduct(Base):
     __tablename__ = "sellproducts"
@@ -25,7 +26,9 @@ class SellProduct(Base):
     price = Column(Float)
     images = Column(String)
     duration = Column(Integer)
+    time = Column(DateTime, default=datetime.now(pytz.timezone('Asia/Kolkata')))  # Set default time to Asia/Kolkata
     location = Column(String)
+
     s_owner_id = Column(Integer, ForeignKey("users.id"))
     
     s_owner = relationship("User", back_populates="s_products")
@@ -48,6 +51,15 @@ class SellCart(Base):
     #uselist = False indicates a one-to-one or many-to-one relationship,
     #  where the relationship returns a single object.
     #  For example, each cart has a single associated payment.
+class WishlistItem(Base):
+    __tablename__ = "wishlistitems"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    product_id = Column(Integer, ForeignKey("sellproducts.id"))
+
+    user = relationship("User", back_populates="wishlist_items")
+    #product = relationship("SellProduct", back_populates="wishlist_items")
 """
 class SellPayment(Base):
     __tablename__ = "sellpayments"

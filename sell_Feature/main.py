@@ -1,6 +1,6 @@
 from fastapi import FastAPI,Depends,status,HTTPException,Query
 from database import engine
-from routers import auth, users, cart
+from routers import auth, users, cart,wishlist
 from database import SessionLocal
 from sqlalchemy.orm import session
 from models import SellProduct
@@ -25,7 +25,7 @@ app.mount("/images", StaticFiles(directory=UPLOAD_FOLDER), name="images")
 
 app.include_router(auth.router)
 app.include_router(cart.cart_router)
-
+app.include_router(wishlist.wishlist_router)
 app.include_router(users.router)
 
 @app.get("/all_users")
