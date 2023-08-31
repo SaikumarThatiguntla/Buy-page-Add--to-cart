@@ -23,31 +23,3 @@ class Sell_product(BaseModel):
 
 
     product_owner_id: int
-"""
-class Sell_product_form(BaseModel):
-
-    title : str
-    description: str
-    category: str
-    images:Optional[str]
-    duration: int
-    price:int
-
-    location: str
-    # product_owner_id: int
-
-    @classmethod
-    def as_form(cls,
-                 title: str = Form(...),
-                description: str = Form(...),
-                category: str = Form(...),
-                images: Optional[str] = Form(...),
-                duration: int = Form(...),
-                price: int = Form(...),
-                time: float = Form(...),
-                location: str = Form(...),
-                )-> 'Sell_product_form':
-        return cls(title= title, description = description, category = category, images = images,
-                   duration = duration,price=price, location= location)
-
-"""
