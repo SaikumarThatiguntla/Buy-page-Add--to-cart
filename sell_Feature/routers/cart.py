@@ -27,7 +27,13 @@ def add_product_to_cart(product_id: int, quantity: int = 1,
     product = db.query(SellProduct).filter(SellProduct.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
+    existing_cart_item = db.query(SellCart).filter(
+        SellCart.user_id == user.get("user_id"),
+        SellCart.product_id == product_id
+    ).first()
 
+    if existing_cart_item:
+        raise HTTPException(status_code=400, detail="Product already in cart")
     cart_item = SellCart(
         user_id=user.get("user_id"),
         product_id=product_id,

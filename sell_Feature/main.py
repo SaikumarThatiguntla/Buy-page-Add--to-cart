@@ -28,47 +28,6 @@ app.include_router(cart.cart_router)
 app.include_router(wishlist.wishlist_router)
 app.include_router(users.router)
 
-@app.get("/all_users")
-async def all_users(db: session = Depends(get_db)):
-    query=db.query(models.User).all()
-    if query is None:
-        return {"message":"Failed", "status":status.HTTP_404_NOT_FOUND }
-
-    return {"message": "successful", "data": query, "status": status.HTTP_200_OK}
-
-
-@app.get("/listed_products")
-async def listed_products(db: session = Depends(get_db)):
-    try:
-        query = db.query(SellProduct).all()
-        if query is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No products found")
-
-        return {"message": "succesful", "data": query, "status": status.HTTP_200_OK}
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
-
-
-@app.get("/products/loc")
-async def get_products(location: str = Query(None, description="Location"),
-                       category: str = Query(None, description="Category")):
-    try:
-        db = SessionLocal()
-        query = db.query(SellProduct)
-
-        if location:
-            query = query.filter(SellProduct.location == location)
-
-        if category:
-            query = query.filter(SellProduct.category == category)
-
-        filtered_products = query.all()
-        db.close()
-        if query is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No products found")
-        return {"message": "successful", "data": filtered_products, "status": status.HTTP_200_OK}
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 # @app.get("/listed_products")
 # async def listed_products(db: session = Depends(get_db)):

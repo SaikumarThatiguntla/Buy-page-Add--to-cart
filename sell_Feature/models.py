@@ -60,17 +60,6 @@ class WishlistItem(Base):
 
     user = relationship("User", back_populates="wishlist_items")
     #product = relationship("SellProduct", back_populates="wishlist_items")
-"""
-class SellPayment(Base):
-    __tablename__ = "sellpayments"
-
-    id = Column(Integer, primary_key=True, index=True)
-    s_cart_id = Column(Integer, ForeignKey("sellcarts.id"))
-    s_payment_method = Column(String)
-    s_payment_status = Column(String)
-    
-    s_cart = relationship("SellCart", back_populates="s_payment")
-"""
 
 class ProductRating(Base):
     __tablename__ = "productratings"
@@ -101,4 +90,17 @@ class ProductPrice(Base):
     date_added = Column(DateTime, default=datetime.utcnow)
 
     product = relationship("SellProduct", back_populates="prices")
+
+
+class SellPayment(Base):
+    __tablename__ = "sellpayments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    s_cart_id = Column(Integer, ForeignKey("sellcarts.id"))
+    s_payment_method = Column(String)
+    s_payment_status = Column(String)
+
+    s_cart = relationship("SellCart", back_populates="s_payment")
+
+
 """

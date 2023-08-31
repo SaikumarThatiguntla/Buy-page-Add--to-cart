@@ -26,7 +26,13 @@ def add_product_to_wishlist(product_id: int,
     product = db.query(SellProduct).filter(SellProduct.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
+    existing_wishlist_item = db.query(WishlistItem).filter(
+        WishlistItem.user_id == user.get("user_id"),
+        WishlistItem.product_id == product_id
+    ).first()
 
+    if existing_wishlist_item:
+        raise HTTPException(status_code=400, detail="Product already in wishlist")
     wishlist_item = WishlistItem(
         user_id=user.get("user_id"),
         product_id=product_id
